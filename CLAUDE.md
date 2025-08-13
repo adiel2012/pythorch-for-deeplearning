@@ -89,6 +89,69 @@ The document includes predefined styles for consistent visualization:
 - All visualizations are designed to complement the code examples and enhance understanding
 - The document now contains 105 pages with comprehensive visual aids for learning PyTorch concepts
 
+## Google Colab Notebooks
+
+The `notebooks/` directory contains interactive Jupyter notebooks designed for Google Colab:
+
+### Available Notebooks
+
+1. **01_fundamental_tensor_operations.ipynb**
+   - Tensor creation, manipulation, and basic operations
+   - Interactive exercises with broadcasting and indexing
+   - Comprehensive visualizations of tensor operations
+
+2. **02_mathematical_operations.ipynb** 
+   - Advanced mathematical functions and linear algebra
+   - Activation function comparisons and visualizations
+   - Numerical stability demonstrations
+
+3. **03_automatic_differentiation.ipynb**
+   - Autograd system and computational graphs
+   - Gradient computation and backpropagation
+   - Manual gradient descent implementation
+
+4. **04_convolutional_neural_networks.ipynb**
+   - Complete CNN architecture building and training
+   - Feature visualization and filter analysis
+   - Image classification pipeline
+
+5. **05_complete_examples.ipynb**
+   - End-to-end deep learning projects
+   - Image classification, regression, autoencoders, and GANs
+   - Production-ready training loops and evaluation
+
+### Notebook Features
+
+- **Interactive Learning**: Hands-on coding with immediate feedback
+- **Google Colab Ready**: One-click execution in browser
+- **Comprehensive Examples**: From basics to complete projects
+- **Visualizations**: Matplotlib plots and interactive demonstrations
+- **Best Practices**: Production-ready code patterns
+- **Progressive Difficulty**: Structured learning path
+
+### Getting Started with Notebooks
+
+1. **Google Colab (Recommended)**:
+   - Click "Open in Colab" badges in notebook files
+   - Automatic PyTorch installation and GPU access
+   - No local setup required
+
+2. **Local Jupyter**:
+   - Install requirements: `torch`, `torchvision`, `matplotlib`, `seaborn`
+   - Launch with `jupyter notebook`
+   - Run notebooks in order for best learning experience
+
+### Learning Path
+
+**Recommended sequence**:
+1. Fundamental Tensor Operations (2-3 hours)
+2. Mathematical Operations (1-2 hours) 
+3. Automatic Differentiation (2-3 hours)
+4. Convolutional Neural Networks (3-4 hours)
+5. Complete Examples (4-6 hours)
+
+**Total estimated time**: 12-18 hours for complete mastery
+
 ## Git Configuration
 
 The repository includes a comprehensive `.gitignore` file that handles:
