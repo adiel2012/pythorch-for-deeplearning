@@ -47,6 +47,30 @@
 % Custom command for output formatting
 \newcommand{\pyoutput}[1]{\textcolor{outputcolor}{\texttt{\# Output: #1}}}
 
+% TikZ styles for tensor visualizations
+\tikzset{
+    tensor/.style={draw, thick, rounded corners=2pt, minimum width=0.8cm, minimum height=0.8cm},
+    tensor1d/.style={tensor, fill=blue!20},
+    tensor2d/.style={tensor, fill=green!20},
+    tensor3d/.style={tensor, fill=red!20},
+    tensor4d/.style={tensor, fill=purple!20},
+    arrow/.style={->, thick, blue},
+    label/.style={font=\small, above},
+    % Neural network styles
+    neuron/.style={circle, draw, thick, minimum size=20pt},
+    input/.style={neuron, fill=blue!20},
+    hidden/.style={neuron, fill=red!20},
+    output/.style={neuron, fill=green!20},
+    % CNN styles
+    conv/.style={rectangle, draw, thick, fill=red!20, minimum width=30pt, minimum height=20pt},
+    pool/.style={rectangle, draw, thick, fill=purple!20, minimum width=20pt, minimum height=15pt},
+    fc/.style={rectangle, draw, thick, fill=green!20, minimum width=25pt, minimum height=15pt},
+    % Attention styles
+    attention/.style={rectangle, draw, thick, fill=purple!20, rounded corners=3pt},
+    head/.style={rectangle, draw, thick, fill=yellow!20, rounded corners=2pt},
+    qkv/.style={rectangle, draw, thick, minimum width=20pt, minimum height=15pt}
+}
+
 \title{PyTorch Functions: From Fundamentals to Neural Networks\\
 \large An Incremental Learning Guide}
 \author{An Educational Tutorial}
@@ -67,6 +91,27 @@
 \textbf{Purpose:} PyTorch's linear algebra operations for mathematical computations in deep learning.
 
 \textbf{Simple Example:}
+
+\textbf{Tensor Shape Transformation Visualization:}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+% Extra simple boxes with large text
+\node[draw, ultra thick, fill=blue!40, minimum width=4cm, minimum height=1cm, text width=3.5cm, align=center, font=\large] at (0,2.5) {\textbf{1D Tensor}\\[0,1,2,3,4,5,6,7,8,9,10,11]};
+\node[draw, ultra thick, fill=green!40, minimum width=3cm, minimum height=1.2cm, text width=2.5cm, align=center, font=\large] at (0,0.8) {\textbf{2D Tensor}\\3×4 matrix};
+\node[draw, ultra thick, fill=red!40, minimum width=2.5cm, minimum height=1.2cm, text width=2cm, align=center, font=\large] at (0,-0.8) {\textbf{3D Tensor}\\2×2×3};
+
+% Very thick arrows
+\draw[ultra thick, ->, blue] (-0.7,1.9) -- (-0.7,1.4);
+\draw[ultra thick, ->, green] (0.7,0.2) -- (0.7,-0.2);
+
+% Large shape labels
+\node[right, font=\Large] at (2.5,2.5) {\textbf{Shape: (12,)}};
+\node[right, font=\Large] at (2.5,0.8) {\textbf{Shape: (3,4)}};
+\node[right, font=\Large] at (2.5,-0.8) {\textbf{Shape: (2,2,3)}};
+\end{tikzpicture}
+\end{center}
+
 \begin{minted}{python}
 import torch
 import torch.linalg as linalg
@@ -733,6 +778,63 @@ def forward(self, x):
     return y
 \end{minted}
 
+\textbf{Visual Guide to Tensor Reshaping:}
+
+The following diagram shows how tensor.view() transforms data layout while preserving elements:
+
+\begin{center}
+\begin{tikzpicture}[scale=1]
+    % Original 1D tensor - very simple
+    \node[above, font=\Large] at (3, 3.5) {\textbf{Original: torch.arange(12)}};
+    \node[draw, ultra thick, fill=blue!40, minimum width=6cm, minimum height=0.8cm, font=\large] at (3, 2.8) {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]};
+    \node[right, font=\Large] at (6.5, 2.8) {\textbf{Shape: (12,)}};
+    
+    % Arrow down
+    \draw[ultra thick, ->, blue] (3, 2.3) -- (3, 1.8);
+    \node[right, font=\Large] at (3.2, 2.05) {\textbf{.view(3, 4)}};
+    
+    % 2D view - simple grid
+    \node[above, font=\Large] at (3, 1.5) {\textbf{2D View: 3×4 Matrix}};
+    \node[draw, ultra thick, fill=green!40, minimum width=3cm, minimum height=2cm, text width=2.5cm, align=center, font=\large] at (3, 0.3) {
+        \textbf{3 rows}\\
+        \textbf{4 columns}\\
+        \textbf{Same 12 elements}
+    };
+    \node[right, font=\Large] at (5, 0.3) {\textbf{Shape: (3, 4)}};
+    
+    % Arrow down  
+    \draw[ultra thick, ->, blue] (3, -0.8) -- (3, -1.3);
+    \node[right, font=\Large] at (3.2, -1.05) {\textbf{.view(2, 2, 3)}};
+    
+    % 3D view - simple representation
+    \node[above, font=\Large] at (3, -1.6) {\textbf{3D View: 2×2×3 Tensor}};
+    
+    % Two slices side by side
+    \node[draw, ultra thick, fill=red!40, minimum width=1.8cm, minimum height=1.5cm, text width=1.5cm, align=center, font=\large] at (1.5, -2.5) {
+        \textbf{Slice 0}\\
+        \textbf{2×3}\\
+        Elements\\
+        0-5
+    };
+    
+    \node[draw, ultra thick, fill=red!40, minimum width=1.8cm, minimum height=1.5cm, text width=1.5cm, align=center, font=\large] at (4.5, -2.5) {
+        \textbf{Slice 1}\\
+        \textbf{2×3}\\
+        Elements\\
+        6-11
+    };
+    \node[right, font=\Large] at (6, -2.5) {\textbf{Shape: (2, 2, 3)}};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Key Insights:}
+\begin{itemize}
+    \item Elements maintain their order during reshaping
+    \item Total number of elements must remain the same
+    \item Use -1 to automatically infer one dimension
+    \item Memory layout changes, but data is preserved
+\end{itemize}
+
 \subsection{Tensor.unsqueeze() and Tensor.squeeze()}
 
 \textbf{Purpose:} Add or remove dimensions of size 1.
@@ -776,6 +878,120 @@ xenc = F.one_hot(torch.tensor([ix]), num_classes=27).float()
 P = (N+1).float()
 P /= P.sum(1, keepdims=True)  # keepdims preserves dimension for broadcasting
 \end{minted}
+
+\textbf{Visual Guide to Squeeze/Unsqueeze Operations:}
+
+The following diagram illustrates how squeeze/unsqueeze modify tensor dimensions:
+
+\begin{center}
+\begin{tikzpicture}[scale=1]
+    % Original 1D tensor - simple
+    \node[above, font=\Large] at (3, 3.5) {\textbf{Original Tensor: [1, 2, 3, 4]}};
+    \node[draw, ultra thick, fill=blue!40, minimum width=3cm, minimum height=0.8cm, font=\large] at (3, 2.8) {1D Tensor};
+    \node[right, font=\Large] at (4.8, 2.8) {\textbf{Shape: (4,)}};
+    
+    % Unsqueeze operations - three simple arrows down
+    \draw[ultra thick, ->, blue] (1, 2.3) -- (1, 1.8);
+    \node[left, font=\large] at (0.8, 2.05) {\textbf{.unsqueeze(1)}};
+    
+    \draw[ultra thick, ->, blue] (3, 2.3) -- (3, 1.8);
+    \node[above, font=\large] at (3, 2.05) {\textbf{.unsqueeze(0)}};
+    
+    \draw[ultra thick, ->, blue] (5, 2.3) -- (5, 1.8);
+    \node[right, font=\large] at (5.2, 2.05) {\textbf{.unsqueeze(0).unsqueeze(0)}};
+    
+    % Three different tensor formats
+    % Column vector (4,1)
+    \node[above, font=\Large] at (1, 1.5) {\textbf{Column Vector}};
+    \node[draw, ultra thick, fill=green!40, minimum width=1.5cm, minimum height=2cm, text width=1.2cm, align=center, font=\large] at (1, 0.5) {
+        \textbf{4 rows}\\
+        \textbf{1 column}
+    };
+    \node[below, font=\Large] at (1, -0.5) {\textbf{Shape: (4, 1)}};
+    
+    % Row vector (1,4) 
+    \node[above, font=\Large] at (3, 1.5) {\textbf{Row Vector}};
+    \node[draw, ultra thick, fill=green!40, minimum width=3cm, minimum height=1cm, text width=2.5cm, align=center, font=\large] at (3, 0.5) {
+        \textbf{1 row}\\
+        \textbf{4 columns}
+    };
+    \node[below, font=\Large] at (3, -0.2) {\textbf{Shape: (1, 4)}};
+    
+    % Batch tensor (1,1,4)
+    \node[above, font=\Large] at (5, 1.5) {\textbf{Batch Tensor}};
+    \node[draw, ultra thick, fill=purple!40, minimum width=2cm, minimum height=1.5cm, text width=1.7cm, align=center, font=\large] at (5, 0.5) {
+        \textbf{1 batch}\\
+        \textbf{1 row}\\
+        \textbf{4 columns}
+    };
+    \node[below, font=\Large] at (5, -0.3) {\textbf{Shape: (1, 1, 4)}};
+    
+    % Squeeze operation
+    \draw[ultra thick, ->, red] (5, -0.7) -- (5, -1.2);
+    \node[right, font=\Large] at (5.2, -0.95) {\textbf{.squeeze()}};
+    
+    % Back to original
+    \node[above, font=\Large] at (5, -1.5) {\textbf{After Squeeze}};
+    \node[draw, ultra thick, fill=blue!40, minimum width=3cm, minimum height=0.8cm, font=\large] at (5, -2) {Back to 1D};
+    \node[below, font=\Large] at (5, -2.5) {\textbf{Shape: (4,)}};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Broadcasting Visualization:}
+
+Understanding how unsqueeze enables broadcasting:
+
+\begin{center}
+\begin{tikzpicture}[scale=1]
+    % Vector A and B at the top
+    \node[above, font=\Large] at (1.5, 3) {\textbf{Vector A: (3,)}};
+    \node[draw, ultra thick, fill=blue!40, minimum width=2.5cm, minimum height=0.8cm, font=\large] at (1.5, 2.5) {[1, 2, 3]};
+    
+    \node[above, font=\Large] at (5, 3) {\textbf{Vector B: (3,)}};
+    \node[draw, ultra thick, fill=red!40, minimum width=2.5cm, minimum height=0.8cm, font=\large] at (5, 2.5) {[4, 5, 6]};
+    
+    % Unsqueeze operations
+    \draw[ultra thick, ->, blue] (1.5, 2) -- (1.5, 1.5);
+    \node[left, font=\large] at (1.2, 1.75) {\textbf{.unsqueeze(0)}};
+    
+    \draw[ultra thick, ->, red] (5, 2) -- (5, 1.5);
+    \node[right, font=\large] at (5.3, 1.75) {\textbf{.unsqueeze(1)}};
+    
+    % Reshaped tensors
+    \node[above, font=\Large] at (1.5, 1.2) {\textbf{A: (1, 3) Row}};
+    \node[draw, ultra thick, fill=blue!40, minimum width=3cm, minimum height=0.8cm, text width=2.5cm, align=center, font=\large] at (1.5, 0.7) {
+        \textbf{1 row, 3 cols}
+    };
+    
+    \node[above, font=\Large] at (5, 1.2) {\textbf{B: (3, 1) Column}};
+    \node[draw, ultra thick, fill=red!40, minimum width=1.5cm, minimum height=2cm, text width=1.2cm, align=center, font=\large] at (5, 0.4) {
+        \textbf{3 rows}\\
+        \textbf{1 col}
+    };
+    
+    % Broadcasting arrow
+    \draw[ultra thick, ->, green] (3.25, 0.4) -- (3.25, -0.3);
+    \node[above, font=\Large] at (3.25, 0.05) {\textbf{A + B broadcasts}};
+    
+    % Result
+    \node[above, font=\Large] at (3.25, -0.6) {\textbf{Result: (3, 3) Matrix}};
+    \node[draw, ultra thick, fill=green!40, minimum width=3cm, minimum height=2cm, text width=2.5cm, align=center, font=\large] at (3.25, -1.5) {
+        \textbf{3×3 Matrix}\\
+        \textbf{Each element}\\
+        \textbf{A[i] + B[j]}
+    };
+    \node[below, font=\Large] at (3.25, -2.5) {\textbf{Shape: (3, 3)}};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Key Concepts:}
+\begin{itemize}
+    \item \textbf{unsqueeze(dim)}: Adds dimension of size 1 at specified position
+    \item \textbf{squeeze()}: Removes all dimensions of size 1
+    \item \textbf{squeeze(dim)}: Removes dimension of size 1 at specific position
+    \item Essential for broadcasting operations between tensors
+    \item Commonly used in CNN/RNN for batch dimension handling
+\end{itemize}
 
 \chapter{Mathematical Operations}
 
@@ -871,6 +1087,104 @@ def forward(self, x):
 def optimized_matmul(A, B):
     return A @ B
 \end{minted}
+
+\textbf{Visual Guide to Matrix Multiplication:}
+
+Understanding how matrix dimensions work in multiplication:
+
+\begin{center}
+\begin{tikzpicture}[scale=1]
+    % Matrix A
+    \node[above, font=\Large] at (1.5, 3) {\textbf{Matrix A: (3, 4)}};
+    \node[draw, ultra thick, fill=blue!40, minimum width=2.5cm, minimum height=1.8cm, text width=2cm, align=center, font=\large] at (1.5, 2) {
+        \textbf{3 rows}\\
+        \textbf{4 columns}
+    };
+    
+    % @ symbol
+    \node[font=\Huge] at (3.5, 2) {\textbf{@}};
+    
+    % Matrix B
+    \node[above, font=\Large] at (5.5, 3) {\textbf{Matrix B: (4, 5)}};
+    \node[draw, ultra thick, fill=green!40, minimum width=2.8cm, minimum height=2.2cm, text width=2.3cm, align=center, font=\large] at (5.5, 2) {
+        \textbf{4 rows}\\
+        \textbf{5 columns}
+    };
+    
+    % = symbol
+    \node[font=\Huge] at (7.5, 2) {\textbf{=}};
+    
+    % Result matrix C
+    \node[above, font=\Large] at (9.5, 3) {\textbf{Result C: (3, 5)}};
+    \node[draw, ultra thick, fill=purple!40, minimum width=2.8cm, minimum height=1.8cm, text width=2.3cm, align=center, font=\large] at (9.5, 2) {
+        \textbf{3 rows}\\
+        \textbf{5 columns}
+    };
+    
+    % Dimension compatibility arrow
+    \draw[ultra thick, ->, red] (2.8, 1) -- (4.2, 1);
+    \node[below, red, font=\Large] at (3.5, 0.6) {\textbf{Inner dims match: 4 = 4}};
+    
+    % Result dimensions arrow
+    \draw[ultra thick, ->, green] (1.5, 0.2) -- (9.5, 0.2);
+    \node[below, green, font=\Large] at (5.5, -0.2) {\textbf{Outer dims: (3, 5)}};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Broadcasting in Matrix Operations:}
+
+How PyTorch handles different dimensional operations:
+
+\begin{center}
+\begin{tikzpicture}[scale=1]
+    % Vector @ Matrix operation (top)
+    \node[above, font=\Large] at (2, 3) {\textbf{Vector @ Matrix}};
+    
+    \node[draw, ultra thick, fill=blue!40, minimum width=2cm, minimum height=0.8cm, font=\large] at (0.8, 2.2) {Vector (3,)};
+    \node[font=\Huge] at (2, 2.2) {\textbf{@}};
+    \node[draw, ultra thick, fill=green!40, minimum width=2cm, minimum height=0.8cm, font=\large] at (3.2, 2.2) {Matrix (3,4)};
+    \node[font=\Huge] at (4.5, 2.2) {\textbf{=}};
+    \node[draw, ultra thick, fill=purple!40, minimum width=2cm, minimum height=0.8cm, font=\large] at (5.8, 2.2) {Result (4,)};
+    
+    % Batch Matrix Multiplication (bottom)
+    \node[above, font=\Large] at (3, 1.2) {\textbf{Batch Matrix Multiplication}};
+    \node[below, font=\large] at (3, 0.9) {(2, 3, 4) @ (2, 4, 5) = (2, 3, 5)};
+    
+    % Batch A
+    \node[draw, ultra thick, fill=blue!40, minimum width=2.2cm, minimum height=1.5cm, text width=1.8cm, align=center, font=\large] at (1.2, 0.2) {
+        \textbf{Batch A}\\
+        \textbf{2 matrices}\\
+        \textbf{each 3×4}
+    };
+    
+    \node[font=\Huge] at (2.8, 0.2) {\textbf{@}};
+    
+    % Batch B  
+    \node[draw, ultra thick, fill=green!40, minimum width=2.2cm, minimum height=1.5cm, text width=1.8cm, align=center, font=\large] at (4.2, 0.2) {
+        \textbf{Batch B}\\
+        \textbf{2 matrices}\\
+        \textbf{each 4×5}
+    };
+    
+    \node[font=\Huge] at (5.8, 0.2) {\textbf{=}};
+    
+    % Batch Result
+    \node[draw, ultra thick, fill=purple!40, minimum width=2.2cm, minimum height=1.5cm, text width=1.8cm, align=center, font=\large] at (7.2, 0.2) {
+        \textbf{Batch C}\\
+        \textbf{2 matrices}\\
+        \textbf{each 3×5}
+    };
+\end{tikzpicture}
+\end{center}
+
+\textbf{Key Rules for Matrix Multiplication:}
+\begin{itemize}
+    \item \textbf{Dimension compatibility}: Inner dimensions must match (A: m×n, B: n×p → C: m×p)
+    \item \textbf{Batch operations}: PyTorch handles batched matrix multiplication automatically
+    \item \textbf{Broadcasting}: Vector-matrix operations broadcast appropriately
+    \item \textbf{@ operator}: Preferred over torch.matmul() for readability
+    \item \textbf{Memory efficiency}: Use torch.compile for optimized operations
+\end{itemize}
 
 \section{Activation Functions}
 
@@ -971,6 +1285,56 @@ self.mlpf = lambda x: m.c_proj(F.tanh(m.c_fc(x)))
 \subsection{requires\_grad Parameter}
 
 \textbf{Purpose:} Enable automatic gradient computation for tensors.
+
+\textbf{Computational Graph Visualization:}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+% Input nodes
+\node[circle, draw, fill=blue!20, minimum size=25pt] (x) at (0,2) {$x$};
+\node[circle, draw, fill=blue!20, minimum size=25pt] (y) at (0,0) {$y$};
+\node[below] at (x) {\tiny requires\_grad=True};
+\node[below] at (y) {\tiny requires\_grad=True};
+
+% Operation nodes
+\node[rectangle, draw, fill=yellow!20, minimum width=30pt] (pow) at (2,2) {$x^2$};
+\node[rectangle, draw, fill=yellow!20, minimum width=30pt] (mul) at (2,0) {$2y$};
+\node[rectangle, draw, fill=orange!20, minimum width=30pt] (add1) at (4,1.5) {$+$};
+\node[rectangle, draw, fill=orange!20, minimum width=30pt] (add2) at (6,1) {$+1$};
+
+% Output node
+\node[circle, draw, fill=green!20, minimum size=25pt] (z) at (8,1) {$z$};
+
+% Forward pass arrows
+\draw[->, thick, blue] (x) -- (pow);
+\draw[->, thick, blue] (y) -- (mul);
+\draw[->, thick, blue] (pow) -- (add1);
+\draw[->, thick, blue] (mul) -- (add1);
+\draw[->, thick, blue] (add1) -- (add2);
+\draw[->, thick, blue] (add2) -- (z);
+
+% Backward pass arrows (dashed red)
+\draw[<-, dashed, thick, red] (x) -- (pow);
+\draw[<-, dashed, thick, red] (y) -- (mul);
+\draw[<-, dashed, thick, red] (pow) -- (add1);
+\draw[<-, dashed, thick, red] (mul) -- (add1);
+\draw[<-, dashed, thick, red] (add1) -- (add2);
+\draw[<-, dashed, thick, red] (add2) -- (z);
+
+% Gradient values
+\node[above, red] at (1,2.5) {\small $\frac{\partial z}{\partial x} = 2x$};
+\node[below, red] at (1,-0.5) {\small $\frac{\partial z}{\partial y} = 2$};
+
+% Legend
+\node[above] at (4,3) {\textbf{Forward Pass}};
+\draw[->, thick, blue] (3,2.7) -- (3.5,2.7);
+\node[above] at (4,2.5) {\textbf{Backward Pass}};
+\draw[<-, dashed, thick, red] (3,2.2) -- (3.5,2.2);
+
+% Function definition
+\node[below] at (4,-1) {$z = x^2 + 2y + 1$};
+\end{tikzpicture}
+\end{center}
 
 \textbf{Simple Example:}
 \begin{minted}{python}
@@ -1109,6 +1473,40 @@ def backward(self):
 
 \textbf{Syntax:} \texttt{nn.Conv2d(in\_channels, out\_channels, kernel\_size, stride=1, padding=0)}
 
+\textbf{Convolution Operation Visualization:}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+% Input feature map
+\draw[thick, fill=blue!20] (0,0) rectangle (4,4);
+\node[above] at (2,4.2) {\textbf{Input Feature Map}};
+\node at (2,2) {5×5×3};
+
+% Kernel/Filter
+\draw[thick, fill=red!30] (5.5,1.5) rectangle (7.5,3.5);
+\node[above] at (6.5,3.7) {\textbf{3×3 Kernel}};
+\node at (6.5,2.5) {3×3×3};
+
+% Convolution arrow
+\draw[ultra thick, ->, orange] (4.2,2) -- (5.3,2);
+\node[above] at (4.75,2.3) {\textbf{*}};
+
+% Output feature map
+\draw[thick, fill=green!20] (9,0.5) rectangle (12,3.5);
+\node[above] at (10.5,3.7) {\textbf{Output Feature Map}};
+\node at (10.5,2) {3×3×64};
+
+% Stride visualization
+\draw[dashed, red] (0.5,3.5) rectangle (2.5,1.5);
+\draw[dashed, red] (1.5,2.5) rectangle (3.5,0.5);
+\node[below] at (2,0) {\small Stride = 1};
+
+% Padding visualization
+\draw[dotted, blue, thick] (-0.5,-0.5) rectangle (4.5,4.5);
+\node[left] at (-0.5,2) {\small Padding};
+\end{tikzpicture}
+\end{center}
+
 \textbf{Simple Example:}
 \begin{minted}{python}
 import torch.nn as nn
@@ -1182,11 +1580,119 @@ output = model(input_tensor)
 print(f"Output shape: {output.shape}")  # torch.Size([16, 1000])
 \end{minted}
 
+\textbf{CNN Architecture Visualization:}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+% Input
+\draw[thick, fill=blue!20] (0,0) rectangle (1.5,1.5);
+\node[below] at (0.75,-0.3) {\tiny Input};
+\node at (0.75,0.75) {\tiny 224×224×3};
+
+% First conv block
+\draw[thick, fill=red!20] (2.5,0) rectangle (4,1.5);
+\node[below] at (3.25,-0.3) {\tiny Conv+BN+ReLU};
+\node at (3.25,0.75) {\tiny 224×224×64};
+
+\draw[thick, fill=purple!20] (4.5,0.25) rectangle (5.5,1.25);
+\node[below] at (5,-0.3) {\tiny MaxPool};
+\node at (5,0.75) {\tiny 112×112×64};
+
+% Second conv block
+\draw[thick, fill=red!30] (6.5,0.25) rectangle (7.5,1.25);
+\node[below] at (7,-0.3) {\tiny Conv+BN+ReLU};
+\node at (7,0.75) {\tiny 112×112×128};
+
+\draw[thick, fill=purple!20] (8,0.375) rectangle (8.75,1.125);
+\node[below] at (8.375,-0.3) {\tiny MaxPool};
+\node at (8.375,0.75) {\tiny 56×56×128};
+
+% Third conv block
+\draw[thick, fill=red!40] (9.5,0.375) rectangle (10.25,1.125);
+\node[below] at (9.875,-0.3) {\tiny Conv+BN+ReLU};
+\node at (9.875,0.75) {\tiny 56×56×256};
+
+\draw[thick, fill=purple!20] (10.75,0.4375) rectangle (11.375,1.0625);
+\node[below] at (11.0625,-0.3) {\tiny MaxPool};
+\node at (11.0625,0.75) {\tiny 28×28×256};
+
+% Global Average Pooling
+\draw[thick, fill=orange!20] (12,0.5) rectangle (12.5,1);
+\node[below] at (12.25,-0.3) {\tiny GAP};
+\node at (12.25,0.75) {\tiny 7×7×256};
+
+% Flatten
+\draw[thick, fill=yellow!20] (13,0.6) rectangle (13.2,0.9);
+\node[below] at (13.1,-0.3) {\tiny Flatten};
+\node at (13.1,0.75) {\tiny 12544};
+
+% FC layers
+\draw[thick, fill=green!20] (14,0.65) rectangle (14.1,0.85);
+\node[below] at (14.05,-0.3) {\tiny FC};
+\node at (14.05,0.75) {\tiny 512};
+
+\draw[thick, fill=green!30] (14.8,0.7) rectangle (14.85,0.8);
+\node[below] at (14.825,-0.3) {\tiny FC};
+\node at (14.825,0.75) {\tiny 1000};
+
+% Arrows
+\foreach \x in {1.5,4,5.5,7.5,8.75,10.25,11.375,12.5,13.2,14.1} {
+    \draw[->, thick] (\x,0.75) -- (\x+0.4,0.75);
+}
+
+% Labels for feature reduction
+\node[above] at (3,2) {\textbf{Feature Extraction}};
+\node[above] at (13.5,2) {\textbf{Classification}};
+\draw[decorate, decoration={brace, amplitude=5pt}] (0,1.7) -- (11.5,1.7);
+\draw[decorate, decoration={brace, amplitude=5pt}] (12,1.7) -- (15,1.7);
+\end{tikzpicture}
+\end{center}
+
 \section{Pooling Layers}
 
 \subsection{torch.nn.MaxPool2d}
 
 \textbf{Purpose:} Applies max pooling for downsampling and translation invariance.
+
+\textbf{Max Pooling Operation Visualization:}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+% Input feature map (4x4)
+\draw[thick] (0,0) grid (4,4);
+\foreach \x/\y/\val in {0/3/8, 1/3/3, 2/3/5, 3/3/1, 0/2/2, 1/2/9, 2/2/4, 3/2/7, 0/1/6, 1/1/1, 2/1/2, 3/1/8, 0/0/3, 1/0/5, 2/0/7, 3/0/4} {
+    \node at (\x+0.5,\y+0.5) {\val};
+}
+\node[above] at (2,4.3) {\textbf{Input (4×4)}};
+
+% Pooling windows
+\draw[red, ultra thick] (0,2) rectangle (2,4);
+\draw[red, ultra thick] (2,2) rectangle (4,4);
+\draw[red, ultra thick] (0,0) rectangle (2,2);
+\draw[red, ultra thick] (2,0) rectangle (4,2);
+
+% Arrow
+\draw[ultra thick, ->, blue] (4.5,2) -- (5.5,2);
+\node[above] at (5,2.3) {\textbf{Max Pool 2×2}};
+
+% Output feature map (2x2)
+\draw[thick] (6,1) grid (8,3);
+\node at (6.5,2.5) {\textbf{9}};
+\node at (7.5,2.5) {\textbf{7}};
+\node at (6.5,1.5) {\textbf{6}};
+\node at (7.5,1.5) {\textbf{8}};
+\node[above] at (7,3.3) {\textbf{Output (2×2)}};
+
+% Max values highlighted
+\node[circle, draw=red, thick] at (1.5,2.5) {};
+\node[circle, draw=red, thick] at (3.5,2.5) {};
+\node[circle, draw=red, thick] at (0.5,1.5) {};
+\node[circle, draw=red, thick] at (3.5,1.5) {};
+
+% Pooling operation details
+\node[below] at (4,-0.5) {\small Kernel: 2×2, Stride: 2};
+\end{tikzpicture}
+\end{center}
 
 \textbf{Simple Example:}
 \begin{minted}{python}
@@ -1318,6 +1824,71 @@ class ModernMLP(nn.Module):
 \subsection{torch.nn.Linear}
 
 \textbf{Purpose:} Applies a linear transformation: $y = xW^T + b$.
+
+\textbf{Neural Network Architecture Visualization:}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+% Input layer
+\foreach \y in {1,2,3,4,5} {
+    \node[circle, draw, fill=blue!20, minimum size=20pt] (I\y) at (0,\y) {$x_{\y}$};
+}
+\node[above] at (0,5.5) {\textbf{Input Layer}};
+\node[below] at (0,0.5) {\small (5 features)};
+
+% Hidden layer 1
+\foreach \y in {1.5,2.5,3.5,4.5} {
+    \node[circle, draw, fill=red!20, minimum size=20pt] (H1\y) at (3,\y) {};
+}
+\node[above] at (3,5) {\textbf{Hidden Layer 1}};
+\node[below] at (3,1) {\small (4 units)};
+
+% Hidden layer 2
+\foreach \y in {2,3,4} {
+    \node[circle, draw, fill=orange!20, minimum size=20pt] (H2\y) at (6,\y) {};
+}
+\node[above] at (6,4.5) {\textbf{Hidden Layer 2}};
+\node[below] at (6,1.5) {\small (3 units)};
+
+% Output layer
+\foreach \y in {2.5,3.5} {
+    \node[circle, draw, fill=green!20, minimum size=20pt] (O\y) at (9,\y) {$y_{\y}$};
+}
+\node[above] at (9,4) {\textbf{Output Layer}};
+\node[below] at (9,2) {\small (2 classes)};
+
+% Connections from input to hidden1
+\foreach \i in {1,2,3,4,5} {
+    \foreach \j in {1.5,2.5,3.5,4.5} {
+        \draw[->, thin, gray] (I\i) -- (H1\j);
+    }
+}
+
+% Connections from hidden1 to hidden2
+\foreach \i in {1.5,2.5,3.5,4.5} {
+    \foreach \j in {2,3,4} {
+        \draw[->, thin, gray] (H1\i) -- (H2\j);
+    }
+}
+
+% Connections from hidden2 to output
+\foreach \i in {2,3,4} {
+    \foreach \j in {2.5,3.5} {
+        \draw[->, thin, gray] (H2\i) -- (O\j);
+    }
+}
+
+% Linear transformation labels
+\node[above, rotate=15] at (1.5,3.5) {\small $W_1, b_1$};
+\node[above, rotate=15] at (4.5,3.2) {\small $W_2, b_2$};
+\node[above, rotate=15] at (7.5,3) {\small $W_3, b_3$};
+
+% Activation functions
+\node[below, fill=white, draw, rounded corners] at (3,0.5) {\small ReLU};
+\node[below, fill=white, draw, rounded corners] at (6,1) {\small ReLU};
+\node[below, fill=white, draw, rounded corners] at (9,1.5) {\small Softmax};
+\end{tikzpicture}
+\end{center}
 
 \textbf{Simple Example:}
 \begin{minted}{python}
@@ -2055,6 +2626,66 @@ outputs = transformer_model(input_ids, attention_mask=attention_mask)
 
 \textbf{Syntax:} \texttt{nn.LSTM(input\_size, hidden\_size, num\_layers=1, batch\_first=False)}
 
+\textbf{LSTM Architecture Visualization:}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+% Time steps
+\foreach \t in {0,1,2,3} {
+    % Input at time t
+    \node[circle, draw, fill=blue!20, minimum size=20pt] (x\t) at (\t*3,0) {$x_{\t}$};
+    
+    % LSTM cell at time t
+    \node[rectangle, draw, fill=yellow!20, minimum width=50pt, minimum height=40pt] (lstm\t) at (\t*3,2) {LSTM};
+    
+    % Hidden state
+    \node[circle, draw, fill=green!20, minimum size=20pt] (h\t) at (\t*3,4) {$h_{\t}$};
+    
+    % Cell state
+    \node[circle, draw, fill=red!20, minimum size=15pt] (c\t) at (\t*3+0.8,3.2) {\tiny $c_{\t}$};
+    
+    % Connections
+    \draw[->, thick] (x\t) -- (lstm\t);
+    \draw[->, thick] (lstm\t) -- (h\t);
+    \draw[->, thick] (lstm\t) -- (c\t);
+    
+    % Recurrent connections
+    \ifnum\t>0
+        \pgfmathparse{int(\t-1)}
+        \let\prev=\pgfmathresult
+        \draw[->, thick, blue] (h\prev) -- (lstm\t);
+        \draw[->, thick, red] (c\prev) -- (lstm\t);
+    \fi
+}
+
+% Labels
+\node[left] at (-0.5,0) {\textbf{Input}};
+\node[left] at (-0.5,2) {\textbf{LSTM}};
+\node[left] at (-0.5,4) {\textbf{Output}};
+
+% Time labels
+\foreach \t in {0,1,2,3} {
+    \node[below] at (\t*3,-0.5) {$t=\t$};
+}
+
+% Inside LSTM cell detail (for t=1)
+\node[above right, font=\tiny] at (3,2.5) {
+    \begin{tabular}{c}
+    Forget Gate \\
+    Input Gate \\
+    Output Gate
+    \end{tabular}
+};
+
+% Arrows showing information flow
+\draw[->, thick, orange, bend left=20] (0,4) to (9,4);
+\node[above] at (4.5,4.5) {\small Hidden State Flow};
+
+\draw[->, thick, red, bend left=30] (0.8,3.2) to (9.8,3.2);
+\node[above] at (5.3,3.8) {\small Cell State Flow};
+\end{tikzpicture}
+\end{center}
+
 \textbf{Simple Example:}
 \begin{minted}{python}
 import torch.nn as nn
@@ -2164,6 +2795,73 @@ print(f"Final hidden: {hn.shape}")     # torch.Size([2, 32, 256])
 \subsection{torch.nn.MultiheadAttention}
 
 \textbf{Purpose:} Multi-head attention mechanism for transformer architectures.
+
+\textbf{Multi-Head Attention Visualization:}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.7]
+% Input tokens
+\foreach \i in {1,2,3,4} {
+    \node[circle, draw, fill=blue!20, minimum size=25pt] (token\i) at (\i*1.5,0) {$x_{\i}$};
+}
+\node[left] at (0,0) {\textbf{Input Tokens}};
+
+% Query, Key, Value projections
+\foreach \i in {1,2,3,4} {
+    \node[rectangle, draw, fill=red!20, minimum width=20pt, minimum height=15pt] (q\i) at (\i*1.5,2) {Q};
+    \node[rectangle, draw, fill=green!20, minimum width=20pt, minimum height=15pt] (k\i) at (\i*1.5,2.7) {K};
+    \node[rectangle, draw, fill=orange!20, minimum width=20pt, minimum height=15pt] (v\i) at (\i*1.5,3.4) {V};
+    
+    % Connections from input to Q,K,V
+    \draw[->, thick] (token\i) -- (q\i);
+    \draw[->, thick] (token\i) -- (k\i);
+    \draw[->, thick] (token\i) -- (v\i);
+}
+
+% Labels for Q, K, V
+\node[left] at (0.75,2) {\textbf{Query}};
+\node[left] at (0.75,2.7) {\textbf{Key}};
+\node[left] at (0.75,3.4) {\textbf{Value}};
+
+% Attention matrix
+\node[rectangle, draw, fill=purple!20, minimum width=80pt, minimum height=50pt] (attn) at (3.75,5) {
+    \begin{tabular}{c}
+    \textbf{Attention} \\
+    \textbf{Computation} \\
+    $\text{Attention}(Q,K,V)$ \\
+    $= \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$
+    \end{tabular}
+};
+
+% Multi-head split
+\foreach \h in {1,2,3} {
+    \node[rectangle, draw, fill=yellow!20, minimum width=30pt, minimum height=20pt] (head\h) at (\h*2,7) {Head \h};
+    \draw[->, thick] (attn) -- (head\h);
+}
+
+% Concatenation and output projection
+\node[rectangle, draw, fill=cyan!20, minimum width=80pt, minimum height=25pt] (concat) at (4,8.5) {Concatenate \& Project};
+\foreach \h in {1,2,3} {
+    \draw[->, thick] (head\h) -- (concat);
+}
+
+% Output
+\foreach \i in {1,2,3,4} {
+    \node[circle, draw, fill=blue!30, minimum size=25pt] (out\i) at (\i*1.5,10) {$o_{\i}$};
+    \draw[->, thick] (concat) -- (out\i);
+}
+\node[left] at (0,10) {\textbf{Output}};
+
+% Attention connections (showing self-attention)
+\foreach \i in {1,2,3,4} {
+    \foreach \j in {1,2,3,4} {
+        \draw[->, thin, gray, opacity=0.3] (q\i.north) -- (attn.south);
+        \draw[->, thin, gray, opacity=0.3] (k\j.north) -- (attn.south);
+        \draw[->, thin, gray, opacity=0.3] (v\j.north) -- (attn.south);
+    }
+}
+\end{tikzpicture}
+\end{center}
 
 \textbf{Simple Example:}
 \begin{minted}{python}
