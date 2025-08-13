@@ -5,7 +5,7 @@ This directory contains Google Colab notebooks that complement the PyTorch tutor
 ## 📚 Notebook Overview
 
 ### [01_fundamental_tensor_operations.ipynb](01_fundamental_tensor_operations.ipynb)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/your-username/pytorch-for-deeplearning/blob/main/notebooks/01_fundamental_tensor_operations.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adiel2012/pythorch-for-deeplearning/blob/main/notebooks/01_fundamental_tensor_operations.ipynb)
 
 **Learning Objectives:**
 - Master tensor creation and manipulation
@@ -22,7 +22,7 @@ This directory contains Google Colab notebooks that complement the PyTorch tutor
 ---
 
 ### [02_mathematical_operations.ipynb](02_mathematical_operations.ipynb)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/your-username/pytorch-for-deeplearning/blob/main/notebooks/02_mathematical_operations.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adiel2012/pythorch-for-deeplearning/blob/main/notebooks/02_mathematical_operations.ipynb)
 
 **Learning Objectives:**
 - Explore advanced mathematical functions
@@ -40,7 +40,7 @@ This directory contains Google Colab notebooks that complement the PyTorch tutor
 ---
 
 ### [03_automatic_differentiation.ipynb](03_automatic_differentiation.ipynb)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/your-username/pytorch-for-deeplearning/blob/main/notebooks/03_automatic_differentiation.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adiel2012/pythorch-for-deeplearning/blob/main/notebooks/03_automatic_differentiation.ipynb)
 
 **Learning Objectives:**
 - Master PyTorch's autograd system
@@ -59,7 +59,7 @@ This directory contains Google Colab notebooks that complement the PyTorch tutor
 ---
 
 ### [04_convolutional_neural_networks.ipynb](04_convolutional_neural_networks.ipynb)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/your-username/pytorch-for-deeplearning/blob/main/notebooks/04_convolutional_neural_networks.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adiel2012/pythorch-for-deeplearning/blob/main/notebooks/04_convolutional_neural_networks.ipynb)
 
 **Learning Objectives:**
 - Build and train convolutional neural networks
@@ -78,7 +78,7 @@ This directory contains Google Colab notebooks that complement the PyTorch tutor
 ---
 
 ### [05_complete_examples.ipynb](05_complete_examples.ipynb)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/your-username/pytorch-for-deeplearning/blob/main/notebooks/05_complete_examples.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/adiel2012/pythorch-for-deeplearning/blob/main/notebooks/05_complete_examples.ipynb)
 
 **Learning Objectives:**
 - Implement end-to-end deep learning projects
