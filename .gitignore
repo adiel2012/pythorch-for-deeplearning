@@ -53,6 +53,7 @@ _minted-*/
 **/_minted-*/
 *.pygtex
 *.pygstyle
+*.pyg
 
 # LaTeX intermediate files
 *.dvi

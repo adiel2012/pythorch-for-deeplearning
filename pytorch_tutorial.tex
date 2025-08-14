@@ -993,6 +993,570 @@ Understanding how unsqueeze enables broadcasting:
     \item Commonly used in CNN/RNN for batch dimension handling
 \end{itemize}
 
+\section{Advanced Tensor Storage and Memory Management}
+
+\begin{keybox}
+Understanding PyTorch's tensor storage system is crucial for performance optimization, memory management, and avoiding subtle bugs. This section provides comprehensive coverage of how tensors are stored in memory and how to leverage this knowledge for efficient computations.
+\end{keybox}
+
+\subsection{Storage Objects and Memory Layout}
+
+\textbf{Core Concept:} Every PyTorch tensor is backed by a \texttt{Storage} object that holds the actual data in a contiguous block of memory. Multiple tensors can share the same storage, which enables efficient operations like views, slicing, and transpose.
+
+\textbf{Storage System Analysis:}
+\begin{minted}{python}
+import torch
+
+# Create a tensor and examine its storage
+tensor = torch.tensor([[1, 2, 3], [4, 5, 6]], dtype=torch.float32)
+print(f"Tensor:\n{tensor}")
+print(f"Tensor shape: {tensor.shape}")
+print(f"Tensor stride: {tensor.stride()}")
+
+# Access the underlying storage
+storage = tensor.storage()
+print(f"\nStorage type: {type(storage)}")
+print(f"Storage size: {storage.size()}")  # Total elements in storage
+print(f"Storage data: {list(storage)}")   # Raw data as 1D array
+
+# Storage shares data across tensor operations
+tensor_view = tensor.view(-1)  # Flatten to 1D
+print(f"\nFlattened tensor: {tensor_view}")
+print(f"Same storage? {tensor.storage().data_ptr() == tensor_view.storage().data_ptr()}")
+print(f"Storage data: {list(tensor_view.storage())}")
+
+# Modifying through storage affects all views
+storage[0] = 999
+print(f"\nAfter storage modification:")
+print(f"Original tensor:\n{tensor}")
+print(f"Flattened view: {tensor_view}")
+\end{minted}
+
+\textbf{Memory Layout and Strides:}
+\begin{minted}{python}
+# Row-major layout (PyTorch default)
+row_major = torch.tensor([[1, 2, 3], [4, 5, 6]])
+print(f"Row-major tensor:\n{row_major}")
+print(f"Strides: {row_major.stride()}")  # (3, 1)
+print(f"Storage: {list(row_major.storage())}")  # [1, 2, 3, 4, 5, 6]
+
+# Transpose creates different view of same storage
+col_major = row_major.t()  # Transpose
+print(f"\nTransposed tensor:\n{col_major}")
+print(f"Strides: {col_major.stride()}")  # (1, 3)
+print(f"Storage: {list(col_major.storage())}")  # Same storage!
+print(f"Same storage? {row_major.storage().data_ptr() == col_major.storage().data_ptr()}")
+\end{minted}
+
+\subsection{Advanced Indexing and Slicing Techniques}
+
+\textbf{Boolean Masking and Conditional Selection:}
+\begin{minted}{python}
+# Create sample data with clear patterns
+data = torch.randn(6, 8) * 2 + 1  # Mean=1, std=2
+print(f"Original data shape: {data.shape}")
+print(f"Data statistics: mean={data.mean():.3f}, std={data.std():.3f}")
+
+# Boolean conditions
+positive_mask = data > 0
+large_mask = data > 2
+negative_mask = data < 0
+outlier_mask = torch.abs(data) > 3
+
+print(f"Positive elements: {positive_mask.sum()} / {data.numel()}")
+print(f"Large elements: {large_mask.sum()} / {data.numel()}")
+print(f"Negative elements: {negative_mask.sum()} / {data.numel()}")
+print(f"Outliers: {outlier_mask.sum()} / {data.numel()}")
+
+# Extract values using boolean masks
+positive_values = data[positive_mask]  # 1D tensor of positive values
+large_values = data[large_mask]        # 1D tensor of large values
+
+print(f"Positive values shape: {positive_values.shape}")
+print(f"Positive values sample: {positive_values[:5]}")
+
+# Modify values using boolean indexing
+modified_data = data.clone()
+modified_data[negative_mask] = 0  # Zero out negative values
+modified_data[large_mask] *= 0.5  # Scale down large values
+
+print(f"Original negative count: {(data < 0).sum()}")
+print(f"Modified negative count: {(modified_data < 0).sum()}")
+\end{minted}
+
+\subsection{Broadcasting Deep Dive}
+
+\textbf{Advanced Broadcasting Patterns:}
+\begin{minted}{python}
+# Multi-Dimensional Broadcasting for Neural Networks
+batch_size, seq_len, embed_dim = 32, 128, 512
+
+# Typical transformer-style operations
+queries = torch.randn(batch_size, seq_len, embed_dim)  # [32, 128, 512]
+keys = torch.randn(batch_size, seq_len, embed_dim)     # [32, 128, 512]
+
+# Attention scores: Q @ K^T with proper broadcasting
+scores = torch.bmm(queries, keys.transpose(-1, -2))    # [32, 128, 128]
+
+# Position-wise bias (different for each position)
+position_bias = torch.randn(1, seq_len, seq_len)      # [1, 128, 128]
+biased_scores = scores + position_bias                 # Broadcasting: [32, 128, 128]
+
+print(f"Queries shape: {queries.shape}")
+print(f"Keys shape: {keys.shape}")
+print(f"Scores shape: {scores.shape}")
+print(f"Position bias shape: {position_bias.shape}")
+print(f"Biased scores shape: {biased_scores.shape}")
+
+# Layer-wise parameters with broadcasting
+num_layers = 6
+layer_weights = torch.randn(num_layers, 1, 1, embed_dim)  # [6, 1, 1, 512]
+layer_biases = torch.randn(num_layers, 1, 1, 1)          # [6, 1, 1, 1]
+
+# Apply different transformations per layer
+input_data = torch.randn(1, batch_size, seq_len, embed_dim)  # [1, 32, 128, 512]
+transformed = input_data * layer_weights + layer_biases      # Broadcasting magic!
+
+print(f"Input data shape: {input_data.shape}")
+print(f"Layer weights shape: {layer_weights.shape}")
+print(f"Transformed shape: {transformed.shape}")  # [6, 32, 128, 512]
+\end{minted}
+
+\subsection{Device Management and Performance Optimization}
+
+\textbf{Comprehensive Device Detection:}
+\begin{minted}{python}
+import torch
+import platform
+
+print("=== Device Environment Analysis ===")
+
+# Basic device information
+print(f"PyTorch version: {torch.__version__}")
+print(f"Python version: {platform.python_version()}")
+print(f"Platform: {platform.system()} {platform.release()}")
+
+# CUDA availability and details
+cuda_available = torch.cuda.is_available()
+print(f"CUDA available: {cuda_available}")
+
+if cuda_available:
+    print(f"CUDA version: {torch.version.cuda}")
+    print(f"Number of GPUs: {torch.cuda.device_count()}")
+    
+    # GPU details for each device
+    for i in range(torch.cuda.device_count()):
+        props = torch.cuda.get_device_properties(i)
+        print(f"\nGPU {i}: {props.name}")
+        print(f"  Compute capability: {props.major}.{props.minor}")
+        print(f"  Total memory: {props.total_memory / 1024**3:.2f} GB")
+        print(f"  Multi-processor count: {props.multi_processor_count}")
+
+# Determine best device
+def get_best_device():
+    """Automatically select the best available device"""
+    if torch.cuda.is_available():
+        # Select GPU with most free memory
+        best_gpu = 0
+        max_free_memory = 0
+        
+        for i in range(torch.cuda.device_count()):
+            props = torch.cuda.get_device_properties(i)
+            allocated = torch.cuda.memory_allocated(i)
+            free_memory = props.total_memory - allocated
+            
+            if free_memory > max_free_memory:
+                max_free_memory = free_memory
+                best_gpu = i
+        
+        return torch.device(f'cuda:{best_gpu}')
+    else:
+        return torch.device('cpu')
+
+best_device = get_best_device()
+print(f"\nSelected device: {best_device}")
+\end{minted}
+
+\textbf{Memory-Efficient Tensor Operations:}
+\begin{minted}{python}
+# Memory usage tracking
+def get_memory_usage():
+    """Get current memory usage in MB"""
+    if torch.cuda.is_available():
+        return torch.cuda.memory_allocated() / 1024**2
+    else:
+        import psutil
+        import os
+        process = psutil.Process(os.getpid())
+        return process.memory_info().rss / 1024**2
+
+initial_memory = get_memory_usage()
+print(f"Initial memory: {initial_memory:.2f} MB")
+
+# Create large tensor
+large_tensor = torch.randn(1000, 1000, requires_grad=True)
+after_creation = get_memory_usage()
+print(f"After tensor creation: {after_creation:.2f} MB (+{after_creation - initial_memory:.2f} MB)")
+
+# Out-of-place operation (creates new tensor)
+result1 = large_tensor * 2
+after_oop = get_memory_usage()
+print(f"After out-of-place op: {after_oop:.2f} MB (+{after_oop - after_creation:.2f} MB)")
+
+# In-place operation (modifies existing tensor)
+large_tensor *= 2  # Equivalent to large_tensor.mul_(2)
+after_ip = get_memory_usage()
+print(f"After in-place op: {after_ip:.2f} MB (+{after_ip - after_oop:.2f} MB)")
+
+print("In-place operations save memory by not creating intermediate tensors")
+\end{minted}
+
+\section{Advanced Data Types and Precision Analysis}
+
+\begin{keybox}
+Understanding PyTorch's data type system and precision implications is crucial for memory optimization, numerical stability, and hardware acceleration. This section provides comprehensive coverage of all PyTorch data types and their applications.
+\end{keybox}
+
+\subsection{Complete Data Type Overview}
+
+\textbf{PyTorch Data Types Analysis:}
+\begin{minted}{python}
+# Complete overview of PyTorch data types
+data_types = {
+    'int8': torch.int8,
+    'int16': torch.int16, 
+    'int32': torch.int32,
+    'int64': torch.int64,
+    'uint8': torch.uint8,
+    'float16': torch.float16,
+    'bfloat16': torch.bfloat16,
+    'float32': torch.float32,
+    'float64': torch.float64,
+    'complex64': torch.complex64,
+    'complex128': torch.complex128,
+    'bool': torch.bool
+}
+
+print("PyTorch Data Types Analysis:")
+print("=" * 60)
+
+for name, dtype in data_types.items():
+    try:
+        if dtype == torch.bool:
+            tensor = torch.tensor([True, False, True], dtype=dtype)
+            print(f"{name:10} - Size: {tensor.element_size():2d} bytes, Values: True/False")
+        elif dtype in [torch.complex64, torch.complex128]:
+            tensor = torch.tensor([1+2j, 3+4j], dtype=dtype)
+            print(f"{name:10} - Size: {tensor.element_size():2d} bytes, Complex type")
+        else:
+            tensor = torch.tensor([1.0, 2.0, 3.0], dtype=dtype)
+            if dtype.is_floating_point:
+                info = torch.finfo(dtype)
+                print(f"{name:10} - Size: {tensor.element_size():2d} bytes, "
+                      f"Range: {info.min:.2e} to {info.max:.2e}")
+            else:
+                info = torch.iinfo(dtype)
+                print(f"{name:10} - Size: {tensor.element_size():2d} bytes, "
+                      f"Range: {info.min:>12} to {info.max:>12}")
+    except Exception as e:
+        print(f"{name:10} - Error: {e}")
+\end{minted}
+
+\textbf{Type Promotion and Precision Analysis:}
+\begin{minted}{python}
+def demonstrate_type_promotion(tensor1, tensor2, operation_name):
+    """Show how PyTorch promotes types during operations"""
+    print(f"{operation_name}:")
+    print(f"  Input 1: {tensor1.dtype} = {tensor1}")
+    print(f"  Input 2: {tensor2.dtype} = {tensor2}")
+    
+    result = tensor1 + tensor2
+    print(f"  Result: {result.dtype} = {result}")
+    print()
+
+# Test different type promotion scenarios
+test_cases = [
+    (torch.tensor([1], dtype=torch.int32), torch.tensor([2.0], dtype=torch.float32), "int32 + float32"),
+    (torch.tensor([1], dtype=torch.float16), torch.tensor([2.0], dtype=torch.float32), "float16 + float32"),
+    (torch.tensor([True], dtype=torch.bool), torch.tensor([5], dtype=torch.int32), "bool + int32"),
+]
+
+for t1, t2, desc in test_cases:
+    demonstrate_type_promotion(t1, t2, desc)
+
+print("Type Promotion Hierarchy (lower to higher):")
+print("bool -> uint8 -> int8 -> int16 -> int32 -> int64")
+print("         -> float16 -> float32 -> float64")
+print("              -> complex64 -> complex128")
+\end{minted}
+
+\section{Real-World Neural Network Applications}
+
+\subsection{Character-Level Language Model Implementation}
+
+\textbf{Complete Implementation Using Advanced Tensor Operations:}
+\begin{minted}{python}
+class CharacterLevelMLP:
+    """Character-level language model using advanced tensor operations"""
+    
+    def __init__(self, vocab_size, embedding_dim, hidden_dim, generator=None):
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.hidden_dim = hidden_dim
+        self.generator = generator or torch.Generator().manual_seed(42)
+        
+        # Initialize parameters using advanced techniques
+        self.embedding = torch.randn(vocab_size, embedding_dim, generator=self.generator) * 0.1
+        
+        # Kaiming initialization for ReLU networks
+        self.W1 = self._kaiming_init(embedding_dim, hidden_dim)
+        self.b1 = torch.zeros(hidden_dim)
+        
+        self.W2 = self._kaiming_init(hidden_dim, hidden_dim)
+        self.b2 = torch.zeros(hidden_dim)
+        
+        # Output layer with smaller initialization
+        self.W_out = torch.randn(hidden_dim, vocab_size, generator=self.generator) * 0.01
+        self.b_out = torch.zeros(vocab_size)
+        
+        # Set requires_grad for all parameters
+        self.parameters = [self.embedding, self.W1, self.b1, self.W2, self.b2, self.W_out, self.b_out]
+        for p in self.parameters:
+            p.requires_grad_(True)
+        
+        self._print_initialization_stats()
+    
+    def _kaiming_init(self, in_features, out_features):
+        """Kaiming initialization for ReLU networks"""
+        W = torch.randn(out_features, in_features, generator=self.generator)
+        fan_in = in_features
+        std = (2.0 / fan_in) ** 0.5
+        W *= std
+        return W
+    
+    def _print_initialization_stats(self):
+        """Print parameter initialization statistics"""
+        print(f"Character-Level MLP Initialization:")
+        print(f"  Vocab size: {self.vocab_size}")
+        print(f"  Embedding dim: {self.embedding_dim}")
+        print(f"  Hidden dim: {self.hidden_dim}")
+        
+        param_names = ['Embedding', 'W1', 'b1', 'W2', 'b2', 'W_out', 'b_out']
+        print(f"\nParameter Statistics:")
+        for name, param in zip(param_names, self.parameters):
+            print(f"  {name:10} - Shape: {str(list(param.shape)):15} "
+                  f"Mean: {param.mean().item():6.3f} Std: {param.std().item():6.3f}")
+        
+        total_params = sum(p.numel() for p in self.parameters)
+        print(f"\nTotal parameters: {total_params:,}")
+    
+    def forward(self, indices):
+        """Forward pass through the network"""
+        # Embedding lookup
+        x = self.embedding[indices]  # (batch_size, embedding_dim)
+        
+        # First hidden layer
+        h1 = torch.relu(x @ self.W1.t() + self.b1)
+        
+        # Second hidden layer
+        h2 = torch.relu(h1 @ self.W2.t() + self.b2)
+        
+        # Output layer
+        logits = h2 @ self.W_out.t() + self.b_out
+        
+        return logits
+
+# Create and test the model
+vocab_size, embedding_dim, hidden_dim = 27, 32, 64
+model = CharacterLevelMLP(vocab_size, embedding_dim, hidden_dim)
+
+# Test forward pass
+batch_size = 8
+test_indices = torch.randint(0, vocab_size, (batch_size,))
+logits = model.forward(test_indices)
+
+print(f"\nForward pass test:")
+print(f"Input indices: {test_indices}")
+print(f"Output logits shape: {logits.shape}")
+print(f"Output probabilities shape: {torch.softmax(logits, dim=-1).shape}")
+\end{minted}
+
+\subsection{Multi-Head Attention Implementation}
+
+\textbf{Transformer-Style Attention with Advanced Reshaping:}
+\begin{minted}{python}
+class MultiHeadAttentionReshaping:
+    def __init__(self, d_model=512, n_heads=8):
+        self.d_model = d_model
+        self.n_heads = n_heads
+        self.d_k = d_model // n_heads
+        
+        # Simulated weight matrices
+        self.W_q = torch.randn(d_model, d_model)
+        self.W_k = torch.randn(d_model, d_model)
+        self.W_v = torch.randn(d_model, d_model)
+    
+    def forward(self, x):
+        batch_size, seq_len, d_model = x.shape
+        print(f"Input shape: {x.shape}")
+        
+        # Linear projections
+        Q = torch.matmul(x, self.W_q)
+        K = torch.matmul(x, self.W_k)
+        V = torch.matmul(x, self.W_v)
+        print(f"After linear projection: Q={Q.shape}, K={K.shape}, V={V.shape}")
+        
+        # Reshape for multi-head attention
+        Q = Q.view(batch_size, seq_len, self.n_heads, self.d_k).transpose(1, 2)
+        K = K.view(batch_size, seq_len, self.n_heads, self.d_k).transpose(1, 2)
+        V = V.view(batch_size, seq_len, self.n_heads, self.d_k).transpose(1, 2)
+        print(f"Multi-head reshape: Q={Q.shape}, K={K.shape}, V={V.shape}")
+        
+        # Attention computation
+        attention_scores = torch.matmul(Q, K.transpose(-2, -1))
+        attention_scores /= (self.d_k ** 0.5)
+        attention_weights = torch.softmax(attention_scores, dim=-1)
+        print(f"Attention weights: {attention_weights.shape}")
+        
+        # Apply attention to values
+        attention_output = torch.matmul(attention_weights, V)
+        print(f"Attention output: {attention_output.shape}")
+        
+        # Concatenate heads
+        attention_output = attention_output.transpose(1, 2).contiguous().view(
+            batch_size, seq_len, d_model
+        )
+        print(f"Final output: {attention_output.shape}")
+        
+        return attention_output
+
+# Example usage
+batch_size, seq_len, d_model = 4, 16, 512
+input_tensor = torch.randn(batch_size, seq_len, d_model)
+attention = MultiHeadAttentionReshaping(d_model, n_heads=8)
+
+output = attention.forward(input_tensor)
+\end{minted}
+
+\section{Performance Optimization Techniques}
+
+\subsection{Memory Access Patterns and Vectorization}
+
+\textbf{Comprehensive Performance Analysis:}
+\begin{minted}{python}
+import time
+
+def benchmark_access_patterns():
+    """Benchmark different memory access patterns"""
+    large_tensor = torch.randn(1000, 1000)
+    
+    # Row-wise access (cache-friendly)
+    start = time.time()
+    for _ in range(100):
+        result = large_tensor.sum(dim=1)
+    row_wise_time = time.time() - start
+    
+    # Column-wise access (cache-unfriendly)
+    start = time.time()
+    for _ in range(100):
+        result = large_tensor.sum(dim=0)
+    col_wise_time = time.time() - start
+    
+    print(f"Row-wise access time: {row_wise_time:.4f}s")
+    print(f"Column-wise access time: {col_wise_time:.4f}s")
+    print(f"Column/Row ratio: {col_wise_time/row_wise_time:.2f}x slower")
+
+def compare_vectorization():
+    """Compare vectorized vs loop operations"""
+    data = torch.randn(10000)
+    
+    # Vectorized operation
+    start = time.time()
+    for _ in range(1000):
+        result_vec = torch.where(data > 0, data * 2, data * 0.5)
+    vec_time = time.time() - start
+    
+    print(f"Vectorization performance:")
+    print(f"Vectorized time: {vec_time:.4f}s")
+    print(f"Estimated speedup over loops: 100-1000x")
+
+def compare_inplace_operations():
+    """Compare in-place vs out-of-place operations"""
+    # Out-of-place operations
+    tensor1 = torch.randn(1000, 1000)
+    start = time.time()
+    for _ in range(100):
+        tensor1 = tensor1 + 1  # Creates new tensor each time
+    out_of_place_time = time.time() - start
+    
+    # In-place operations
+    tensor2 = torch.randn(1000, 1000)
+    start = time.time()
+    for _ in range(100):
+        tensor2 += 1  # Modifies existing tensor
+    in_place_time = time.time() - start
+    
+    print(f"In-place vs Out-of-place:")
+    print(f"Out-of-place time: {out_of_place_time:.4f}s")
+    print(f"In-place time: {in_place_time:.4f}s")
+    print(f"In-place speedup: {out_of_place_time/in_place_time:.2f}x")
+
+# Run benchmarks
+benchmark_access_patterns()
+compare_vectorization()
+compare_inplace_operations()
+\end{minted}
+
+\textbf{Broadcasting Efficiency Optimization:}
+\begin{minted}{python}
+def analyze_broadcasting_efficiency():
+    """Analyze efficiency of different broadcasting patterns"""
+    batch_size, seq_len, d_model = 32, 128, 512
+    
+    query = torch.randn(batch_size, seq_len, d_model)
+    key = torch.randn(batch_size, seq_len, d_model)
+    
+    # Method 1: Batch matrix multiplication
+    start = time.time()
+    scores_bmm = torch.bmm(query, key.transpose(1, 2))
+    bmm_time = time.time() - start
+    
+    # Method 2: Efficient einsum
+    start = time.time()
+    scores_einsum = torch.einsum('bqd,bkd->bqk', query, key)
+    einsum_time = time.time() - start
+    
+    print(f"Broadcasting efficiency:")
+    print(f"BMM method: {bmm_time:.4f}s")
+    print(f"Einsum method: {einsum_time:.4f}s")
+    print(f"Results identical: {torch.allclose(scores_bmm, scores_einsum, atol=1e-5)}")
+    
+    # Memory usage comparison
+    bmm_mem = scores_bmm.element_size() * scores_bmm.nelement()
+    print(f"Memory usage: {bmm_mem / 1e6:.1f} MB")
+
+analyze_broadcasting_efficiency()
+\end{minted}
+
+\section{Summary}
+
+\begin{summarybox}
+This comprehensive Chapter 4 has provided complete coverage of:
+
+\begin{itemize}
+\item \textbf{Tensor Storage and Memory Layout}: Internal storage system, strides, and memory optimization strategies
+\item \textbf{Advanced Tensor Creation}: Comprehensive methods including specialized distributions and device operations
+\item \textbf{Advanced Indexing and Slicing}: Boolean masking, fancy indexing, and memory-efficient operations
+\item \textbf{Broadcasting Deep Dive}: Multi-dimensional patterns with performance considerations and edge cases  
+\item \textbf{Device Management}: Professional GPU operations, memory profiling, and multi-device programming
+\item \textbf{Data Types and Precision}: Complete type system analysis with promotion rules and memory implications
+\item \textbf{Real-World Applications}: Character-level language models, attention mechanisms, and transformer operations
+\item \textbf{Performance Optimization}: Memory access patterns, vectorization, and advanced optimization techniques
+\end{itemize}
+
+These fundamentals form the complete foundation for all advanced PyTorch operations and are essential for writing efficient, scalable deep learning code at a professional level.
+\end{summarybox}
+
 \chapter{Mathematical Operations}
 
 \section{Basic Arithmetic}
