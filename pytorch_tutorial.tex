@@ -47,6 +47,38 @@
 % Custom command for output formatting
 \newcommand{\pyoutput}[1]{\textcolor{outputcolor}{\texttt{\# Output: #1}}}
 
+% Define keybox environment for highlighting key concepts
+\newenvironment{keybox}
+{\begin{center}
+\begin{minipage}{0.9\textwidth}
+\vspace{0.3em}
+\hrule height 0.8pt
+\vspace{0.5em}
+\textbf{Key Concept:} \itshape}
+{\vspace{0.5em}
+\hrule height 0.8pt
+\vspace{0.3em}
+\end{minipage}
+\end{center}}
+
+% Define summarybox environment for chapter summaries
+\newenvironment{summarybox}
+{\begin{center}
+\begin{minipage}{0.95\textwidth}
+\vspace{0.5em}
+\hrule height 1pt
+\vspace{0.3em}
+\hrule height 0.5pt
+\vspace{0.7em}
+\textbf{Chapter Summary} \par\vspace{0.3em}}
+{\vspace{0.5em}
+\hrule height 0.5pt
+\vspace{0.3em}
+\hrule height 1pt
+\vspace{0.5em}
+\end{minipage}
+\end{center}}
+
 % TikZ styles for tensor visualizations
 \tikzset{
     tensor/.style={draw, thick, rounded corners=2pt, minimum width=0.8cm, minimum height=0.8cm},
@@ -97,7 +129,7 @@
 \begin{center}
 \begin{tikzpicture}[scale=1.5]
 % Extra simple boxes with large text
-\node[draw, ultra thick, fill=blue!40, minimum width=4cm, minimum height=1cm, text width=3.5cm, align=center, font=\large] at (0,2.5) {\textbf{1D Tensor}\\[0,1,2,3,4,5,6,7,8,9,10,11]};
+\node[draw, ultra thick, fill=blue!40, minimum width=4cm, minimum height=1cm, text width=3.5cm, align=center, font=\large] at (0,2.5) {\textbf{1D Tensor}\\{[}0,1,2,3,4,5,6,7,8,9,10,11{]}};
 \node[draw, ultra thick, fill=green!40, minimum width=3cm, minimum height=1.2cm, text width=2.5cm, align=center, font=\large] at (0,0.8) {\textbf{2D Tensor}\\3×4 matrix};
 \node[draw, ultra thick, fill=red!40, minimum width=2.5cm, minimum height=1.2cm, text width=2cm, align=center, font=\large] at (0,-0.8) {\textbf{3D Tensor}\\2×2×3};
 
@@ -1361,8 +1393,10 @@ class CharacterLevelMLP:
         # Second hidden layer
         h2 = torch.relu(h1 @ self.W2.t() + self.b2)
         
-        # Output layer
-        logits = h2 @ self.W_out.t() + self.b_out
+        # Output layer - FIXED: Removed transpose for correct matrix multiplication
+        # h2 shape: (batch_size, hidden_dim), W_out shape: (hidden_dim, vocab_size)
+        # Correct multiplication: (batch_size, hidden_dim) @ (hidden_dim, vocab_size) = (batch_size, vocab_size)
+        logits = h2 @ self.W_out + self.b_out
         
         return logits
 
@@ -2401,8 +2435,8 @@ class ModernMLP(nn.Module):
 \node[below] at (0,0.5) {\small (5 features)};
 
 % Hidden layer 1
-\foreach \y in {1.5,2.5,3.5,4.5} {
-    \node[circle, draw, fill=red!20, minimum size=20pt] (H1\y) at (3,\y) {};
+\foreach \i/\y in {1/1.5,2/2.5,3/3.5,4/4.5} {
+    \node[circle, draw, fill=red!20, minimum size=20pt] (H1\i) at (3,\y) {};
 }
 \node[above] at (3,5) {\textbf{Hidden Layer 1}};
 \node[below] at (3,1) {\small (4 units)};
@@ -2415,21 +2449,21 @@ class ModernMLP(nn.Module):
 \node[below] at (6,1.5) {\small (3 units)};
 
 % Output layer
-\foreach \y in {2.5,3.5} {
-    \node[circle, draw, fill=green!20, minimum size=20pt] (O\y) at (9,\y) {$y_{\y}$};
+\foreach \i/\y in {1/2.5,2/3.5} {
+    \node[circle, draw, fill=green!20, minimum size=20pt] (O\i) at (9,\y) {$y_{\i}$};
 }
 \node[above] at (9,4) {\textbf{Output Layer}};
 \node[below] at (9,2) {\small (2 classes)};
 
 % Connections from input to hidden1
 \foreach \i in {1,2,3,4,5} {
-    \foreach \j in {1.5,2.5,3.5,4.5} {
+    \foreach \j in {1,2,3,4} {
         \draw[->, thin, gray] (I\i) -- (H1\j);
     }
 }
 
 % Connections from hidden1 to hidden2
-\foreach \i in {1.5,2.5,3.5,4.5} {
+\foreach \i in {1,2,3,4} {
     \foreach \j in {2,3,4} {
         \draw[->, thin, gray] (H1\i) -- (H2\j);
     }
@@ -2437,7 +2471,7 @@ class ModernMLP(nn.Module):
 
 % Connections from hidden2 to output
 \foreach \i in {2,3,4} {
-    \foreach \j in {2.5,3.5} {
+    \foreach \j in {1,2} {
         \draw[->, thin, gray] (H2\i) -- (O\j);
     }
 }
